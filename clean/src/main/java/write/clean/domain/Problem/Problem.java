@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import write.clean.domain.Answer.Answer;
 
@@ -31,5 +32,10 @@ public class Problem {
 
     public void addAnswer(Answer answer) {
         this.answers.add(answer);
+    }
+
+    @Builder
+    public Problem(String problemContent) {
+        this.problemContent = problemContent;
     }
 }
