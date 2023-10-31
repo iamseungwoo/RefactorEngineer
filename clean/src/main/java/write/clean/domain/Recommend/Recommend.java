@@ -10,7 +10,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import write.clean.domain.Answer.Answer;
-import write.clean.dtos.recommend.SaveRecommendDto;
 
 @Entity
 @Table(name = "recommend")

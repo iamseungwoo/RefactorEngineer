@@ -12,13 +12,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import write.clean.domain.Answer.Answer;
 
 @Entity
 @Getter
+@NoArgsConstructor
 @Table(name = "problem")
 public class Problem {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")

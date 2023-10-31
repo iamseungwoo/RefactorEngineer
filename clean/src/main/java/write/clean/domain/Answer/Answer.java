@@ -18,7 +18,7 @@ import write.clean.domain.Recommend.Recommend;
 @Entity
 @Table(name = "answer")
 public class Answer {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -36,5 +36,9 @@ public class Answer {
         this.content = content;
         this.problem = problem;
         this.problem.addAnswer(this);
+    }
+
+    public String getContent() {
+        return this.content;
     }
 }
