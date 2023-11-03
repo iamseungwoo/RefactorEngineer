@@ -9,17 +9,18 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Builder;
-import lombok.Getter;
 
-@Getter
 public class JwtFactory {
-    private String subject;
+    private String subject = "default@gmail.com";
     private Key key;
+
     private JwtProperties jwtProperties;
+    private long expire;
 
     @Builder
-    public JwtFactory(String subject, JwtProperties jwtProperties) {
+    public JwtFactory(String subject, long expire, JwtProperties jwtProperties) {
         this.subject = subject;
+        this.expire = expire;
         this.jwtProperties = jwtProperties;
     }
 
@@ -27,13 +28,12 @@ public class JwtFactory {
         byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
         this.key = Keys.hmacShaKeyFor(keyBytes);
         long now = (new Date()).getTime();
-        Date expire = new Date(now + jwtProperties.getTokenValidityInSeconds());
         return Jwts.builder()
                 .setSubject(subject)
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                 .setIssuer(jwtProperties.getIssuer())
                 .claim("auth", "user")
-                .setExpiration(expire)
+                .setExpiration(new Date(now + expire))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
