@@ -8,12 +8,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import write.clean.domain.Answer.Answer;
+import write.clean.domain.User.User;
 
 @Entity
 @Getter
@@ -31,6 +33,9 @@ public class Problem {
 
     @OneToMany(mappedBy = "problem")
     private List<Answer> answers = new ArrayList<>();
+
+    @ManyToOne
+    private User user;
 
     public void addAnswer(Answer answer) {
         this.answers.add(answer);

@@ -1,5 +1,6 @@
 package write.clean.domain.User;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -12,11 +13,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import write.clean.domain.Answer.Answer;
+import write.clean.domain.Problem.Problem;
 
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -34,6 +38,12 @@ public class User implements UserDetails{
 
     @Column(name = "password")
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    private List<Answer> answers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Problem> problems = new ArrayList<>();
 
     @Builder
     public User(String email, String password, String auth) {

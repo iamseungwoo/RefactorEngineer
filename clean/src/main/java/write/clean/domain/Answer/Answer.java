@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import write.clean.domain.Problem.Problem;
 import write.clean.domain.Recommend.Recommend;
+import write.clean.domain.User.User;
 
 @Entity
 @Table(name = "answer")
@@ -30,6 +31,9 @@ public class Answer {
 
     @OneToMany(mappedBy = "answer")
     private List<Recommend> recommends = new ArrayList<>();
+
+    @ManyToOne
+    private User user;
 
     @Builder
     public Answer(String content, Problem problem) {
