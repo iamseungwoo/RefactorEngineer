@@ -15,14 +15,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public Long save(AddUserRequest dto) {
+
+    public User signup(AddUserRequest dto) {
+        
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 email입니다.");
+        }
+        
         return userRepository.save(
             User.builder()
                 .email(dto.getEmail())
                 .password(bCryptPasswordEncoder.encode(dto.getPassword()))
                 .build()
-            )
-            .getId();
+        );
     }
 
     public User findById(Long userId) {

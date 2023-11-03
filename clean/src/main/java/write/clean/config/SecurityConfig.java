@@ -3,59 +3,52 @@ package write.clean.config;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
-import write.clean.service.user.UserDetailService;
+import write.clean.config.jwt.JwtAccessDeniedHandler;
+import write.clean.config.jwt.JwtAuthenticationEntryPoint;
+import write.clean.config.jwt.JwtSecurityConfig;
+import write.clean.config.jwt.TokenProvider;
 
 @RequiredArgsConstructor
+@EnableWebSecurity
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
-    
-    private final UserDetailService userService;
+
+    private final TokenProvider tokenProvider;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
-                        .requestMatchers(PathRequest.toH2Console())
-                        .requestMatchers("/static/**");
+                .requestMatchers(PathRequest.toH2Console())
+                .requestMatchers("/static/**");
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests((authorize) ->
-                    authorize
-                        .requestMatchers("/login", "/signup", "/user").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .formLogin((login) ->
-                    login
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/articles")
-                )
-                .logout((logout) -> 
-                    logout
-                        .logoutSuccessUrl("/login")
-                        .invalidateHttpSession(true)
-                )
-                .csrf(CsrfConfigurer::disable)
-                .build();
-    }
-
-    @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() throws Exception {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-
-        daoAuthenticationProvider.setUserDetailsService(userService);
-        daoAuthenticationProvider.setPasswordEncoder(bCryptPasswordEncoder());
-
-        return daoAuthenticationProvider;
+        http
+            .csrf(CsrfConfigurer::disable)
+            .exceptionHandling(exceptionHandling -> exceptionHandling
+                    .accessDeniedHandler(jwtAccessDeniedHandler)
+                    .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+            .authorizeHttpRequests((authorize) -> authorize
+                    .requestMatchers("/login", "/signup", "/user").permitAll()
+                    .anyRequest().authenticated())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
+            .apply(new JwtSecurityConfig(tokenProvider));
+        return http.build();
     }
 
     @Bean

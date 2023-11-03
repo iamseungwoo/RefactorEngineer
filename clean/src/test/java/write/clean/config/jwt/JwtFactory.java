@@ -1,45 +1,40 @@
 package write.clean.config.jwt;
 
-import static java.util.Collections.*;
-
-import java.time.Duration;
+import java.security.Key;
 import java.util.Date;
-import java.util.Map;
 
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 public class JwtFactory {
-    private String subject = "test@email.com";
-    private Date issuedAt = new Date();
-    private Date expiration = new Date(new Date().getTime() + Duration.ofDays(14).toMillis());
-    private Map<String, Object> claims = emptyMap();
+    private String subject;
+    private Key key;
+    private JwtProperties jwtProperties;
 
     @Builder
-    public JwtFactory(String subject, Date issuedAt, Date expiration, Map<String, Object> claims) {
-        this.subject = subject != null ? subject : this.subject;
-        this.issuedAt = issuedAt != null ? issuedAt : this.issuedAt;
-        this.expiration = expiration != null ? expiration : this.expiration;
-        this.claims = claims != null ? claims : this.claims;
+    public JwtFactory(String subject, JwtProperties jwtProperties) {
+        this.subject = subject;
+        this.jwtProperties = jwtProperties;
     }
 
-    public static JwtFactory withDefaultValues() {
-        return JwtFactory.builder().build();
-    }
-
-    public String createToken(JwtProperties jwtProperties) {
+    public String createToken() {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+        long now = (new Date()).getTime();
+        Date expire = new Date(now + jwtProperties.getTokenValidityInSeconds());
         return Jwts.builder()
                 .setSubject(subject)
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                 .setIssuer(jwtProperties.getIssuer())
-                .setIssuedAt(issuedAt)
-                .setExpiration(expiration)
-                .addClaims(claims)
-                .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
+                .claim("auth", "user")
+                .setExpiration(expire)
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
 }

@@ -11,7 +11,8 @@ import lombok.Setter;
 @Component
 @ConfigurationProperties("jwt")
 public class JwtProperties {
-    
+    private String header;
     private String issuer;
     private String secretKey;
+    private Long tokenValidityInSeconds;
 }
